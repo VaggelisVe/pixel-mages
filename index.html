@@ -20,7 +20,7 @@
 <style>
 /* Layout: one full-screen landscape canvas; menus are chunky pixel panels floating over a live bot match */
 :root{
-  --night:#140f26; --panel:#221a3d; --panel-2:#2e2452; --line:#0a0714;
+  --night:#140f26; --panel:#221a3d; --panel-2:#2e2452; --panel-3:#3d3070; --line:#0a0714;
   --ink:#f3ecff; --muted:#a99cc9; --gold:#ffd23f; --gold-ink:#2a1a00;
   --mana:#4fd6ff; --mana-dark:#1e6f98; --blood:#ff4f6d; --blood-dark:#9e2038; --leaf:#5be37d;
   --f-pixel:"Press Start 2P", ui-monospace, Menlo, Consolas, monospace;
@@ -73,17 +73,45 @@ button{touch-action:manipulation}
 .check input{width:20px;height:20px;accent-color:var(--gold)}
 .err{color:var(--blood);min-height:20px;font-size:20px;line-height:1}
 
-/* ---------- home ---------- */
-.home{display:flex;gap:22px;align-items:center;justify-content:center;flex-wrap:wrap;width:min(840px,100%);max-height:100%;overflow:auto}
-.home-left{display:flex;flex-direction:column;align-items:center;gap:12px;flex:1 1 300px;min-width:0}
-#titleCanvas{width:min(100%,420px);height:auto;image-rendering:pixelated;filter:drop-shadow(0 4px 0 var(--line))}
-.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+/* ---------- home: hero on a magic circle in the middle, menus pinned to the corners ---------- */
 .stat-chip{font-family:var(--f-pixel);font-size:9px;background:var(--line);padding:7px 9px;border:3px solid var(--panel-2);white-space:nowrap}
 .stat-chip.coins{color:var(--gold)}
-.home-right{display:flex;flex-direction:column;gap:10px;flex:1 1 260px;max-width:340px;min-width:0}
-.btn.play{font-size:22px;padding:16px;background:var(--gold);color:var(--gold-ink)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.hint{font-size:18px;color:var(--muted);text-align:center;margin:0}
+#scrHome{display:block;padding:0;background:radial-gradient(ellipse 55% 65% at 50% 58%,rgba(78,52,150,.5),rgba(10,7,20,.86) 78%)}
+.acct{position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));display:flex;gap:10px;align-items:center;padding:6px 12px 6px 6px;text-transform:none}
+.acct canvas{width:36px;height:46px;image-rendering:pixelated;background:var(--line);border:2px solid var(--panel)}
+.acct span{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.acct b{font-weight:400;font-size:10px}
+.acct small{font-size:8px;color:var(--gold)}
+#titleCanvas{position:absolute;top:max(16px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(28vw,230px);height:auto;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 3px 0 var(--line))}
+.side{position:absolute;top:max(10px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px;width:clamp(130px,19vw,170px)}
+.side .stat-chip{text-align:center;font-size:11px}
+.side .btn{font-size:9px;padding:9px 6px}
+.stage{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);display:flex;align-items:flex-end;gap:clamp(6px,2.5vw,24px)}
+.hero-spot{background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;color:var(--ink)}
+.hero-spot:focus-visible,.slot:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#stageCanvas{height:clamp(110px,42vh,190px);width:auto;aspect-ratio:64/60;image-rendering:pixelated}
+.hero-name{font-family:var(--f-pixel);font-size:9px;background:var(--line);padding:6px 10px;border:3px solid var(--panel-2);white-space:nowrap}
+.slot{width:clamp(58px,9vw,82px);aspect-ratio:3/4;margin-bottom:36px;background:rgba(10,7,20,.55);border:3px dashed rgba(243,236,255,.35);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:var(--f-pixel);padding:4px}
+.slot .plus{font-size:26px;color:var(--gold);line-height:1}
+.slot small{font-size:7px;color:var(--muted);text-align:center;line-height:1.3}
+.slot canvas{width:62%;height:auto;image-rendering:pixelated}
+.slot.filled{border-style:solid;border-color:var(--mana)}
+.slot:active{transform:translateY(2px)}
+.btn.play{font-size:22px;padding:16px 18px;background:var(--gold);color:var(--gold-ink)}
+#btnPlay{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:max(14px,env(safe-area-inset-bottom,0px));min-width:clamp(150px,22vw,210px)}
+
+/* ---------- difficulty, teammates, account ---------- */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.mode{--c:var(--gold);display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;padding:14px 10px;background:var(--panel-2);border:3px solid var(--line);border-top:8px solid var(--c);box-shadow:0 4px 0 var(--line);color:var(--ink);cursor:pointer;font-family:var(--f-body)}
+.mode:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.mode:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.mode.easy{--c:var(--leaf)} .mode.hard{--c:var(--blood)}
+.mode.last{background:var(--panel-3)}
+.m-name{font-family:var(--f-pixel);font-size:14px;color:var(--c)}
+.m-pay{font-family:var(--f-pixel);font-size:16px;color:var(--gold)}
+.m-desc{font-size:19px;line-height:1.05;color:var(--muted)}
+.friend-box{border:3px dashed var(--panel-2);padding:10px;display:flex;flex-direction:column;gap:6px}
+.friend-box b{font-family:var(--f-pixel);font-size:10px;font-weight:400;color:var(--gold)}
 
 /* ---------- hero cards ---------- */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
@@ -154,8 +182,8 @@ button{touch-action:manipulation}
 .phone-icon{width:46px;height:78px;border:5px solid var(--ink);border-radius:8px;animation:rot 2.2s infinite}
 @keyframes rot{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
 @media (orientation:portrait) and (pointer:coarse){#rotate{display:flex}}
-@media (max-width:520px){.row2{grid-template-columns:1fr}}
-@media (max-height:420px){.btn.play{padding:12px;font-size:18px}.home{gap:14px}.panel-body{padding:10px}}
+@media (max-width:520px){.row2,.modes{grid-template-columns:1fr}}
+@media (max-height:420px){.btn.play{padding:12px 16px;font-size:18px}.panel-body{padding:10px}.mode{padding:10px 8px}}
 @media (prefers-reduced-motion:reduce){.phone-icon{animation:none}#toast{transition:none}}
 [hidden]{display:none!important}
 </style>
@@ -219,21 +247,55 @@ button{touch-action:manipulation}
 </section>
 
 <section class="screen" id="scrHome" hidden>
-  <div class="home">
-    <div class="home-left">
-      <canvas id="titleCanvas" width="140" height="42"></canvas>
-      <div class="chips"><span class="stat-chip" id="homeUser">MAGE</span><span class="stat-chip coins" id="homeCoins">$0</span><span class="stat-chip" id="homeWins">0 WINS</span></div>
-      <p class="hint">Win a match against the bots to earn $100.</p>
-    </div>
-    <div class="home-right">
-      <button class="btn play" id="btnPlay">Play</button>
-      <div class="grid2">
-        <button class="btn mana" data-go="scrHeroes">Heroes</button>
-        <button class="btn mana" data-go="scrInv">Inventory</button>
-        <button class="btn" data-go="scrShop">Shop</button>
-        <button class="btn" data-go="scrBoard">Leaderboard</button>
+  <button class="btn acct" data-go="scrAccount" aria-label="Account"><canvas id="acctAvatar" width="14" height="18"></canvas><span><b id="homeUser">MAGE</b><small id="homeWins">0 WINS</small></span></button>
+  <canvas id="titleCanvas" width="134" height="18" aria-hidden="true"></canvas>
+  <div class="side">
+    <span class="stat-chip coins" id="homeCoins">$0</span>
+    <button class="btn" data-go="scrShop">Shop</button>
+    <button class="btn mana" data-go="scrInv">Inventory</button>
+    <button class="btn mana" data-go="scrHeroes">Index</button>
+    <button class="btn" data-go="scrBoard">Leaderboard</button>
+  </div>
+  <div class="stage">
+    <button class="slot" data-slot="0" aria-label="Add teammate 1"></button>
+    <button class="hero-spot" data-go="scrInv" aria-label="Change hero"><canvas id="stageCanvas" width="64" height="60"></canvas><span class="hero-name" id="heroName">Arlo</span></button>
+    <button class="slot" data-slot="1" aria-label="Add teammate 2"></button>
+  </div>
+  <button class="btn play" id="btnPlay">Play</button>
+</section>
+
+<section class="screen" id="scrMode" hidden>
+  <div class="panel">
+    <div class="panel-head"><button class="btn small" data-go="scrHome">Back</button><h2>Choose difficulty</h2></div>
+    <div class="panel-body">
+      <div class="modes">
+        <button class="mode easy" data-diff="easy"><span class="m-name">EASY</span><span class="m-pay">+$50</span><span class="m-desc">Slow, weak bots that miss a lot. Good for learning.</span></button>
+        <button class="mode medium" data-diff="medium"><span class="m-name">MEDIUM</span><span class="m-pay">+$100</span><span class="m-desc">A fair fight. Bots aim well and use their spells.</span></button>
+        <button class="mode hard" data-diff="hard"><span class="m-name">HARD</span><span class="m-pay">+$150</span><span class="m-desc">Fast, sharp bots that dodge and hit hard.</span></button>
       </div>
-      <div class="grid2"><button class="btn small" id="btnSound">Sound: on</button><button class="btn small" id="btnLogout">Log out</button></div>
+      <p class="note">You get the money only when your team wins the match.</p>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="scrTeam" hidden>
+  <div class="panel">
+    <div class="panel-head"><button class="btn small" data-go="scrHome">Back</button><h2 id="teamTitle">Teammate</h2><button class="btn small red" id="btnClearSlot">Empty slot</button></div>
+    <div class="panel-body stack">
+      <div class="friend-box"><b>Play with friends</b><p class="note">Online matches with your friends are coming soon. For now, pick a bot teammate from your heroes.</p></div>
+      <p class="note" id="teamEmpty">You have no other heroes yet. Buy heroes in the shop to pick them here. Empty slots get an Arlo bot.</p>
+      <div class="cards" id="teamCards"></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="scrAccount" hidden>
+  <div class="panel narrow">
+    <div class="panel-head"><button class="btn small" data-go="scrHome">Back</button><h2>Account</h2></div>
+    <div class="panel-body stack">
+      <p class="note">Signed in as <b id="accName"></b>.</p>
+      <table class="lb" id="accStats"></table>
+      <div class="row-btns"><button class="btn small" id="btnSound">Sound: on</button><button class="btn small red" id="btnLogout">Log out</button></div>
     </div>
   </div>
 </section>
@@ -313,7 +375,13 @@ button{touch-action:manipulation}
 
 // ===================== constants =====================
 const TILE = 16, MW = 50, MH = 30, WW = MW * TILE, WH = MH * TILE, VH = 270;
-const KILLS_TO_WIN = 10, MATCH_TIME = 180, REWARD = 100, RESPAWN = 4, DASH_CD = 2.4;
+const KILLS_TO_WIN = 10, MATCH_TIME = 180, RESPAWN = 4, DASH_CD = 2.4;
+// enemy bots get these multipliers; "you" scales the player's HP
+const DIFFS = {
+  easy:   { name: 'Easy',   reward: 50,  skill: .1,  hp: .7,   dmg: .5,  rate: 1.6, speed: .85, ally: .75, you: 1.3 },
+  medium: { name: 'Medium', reward: 100, skill: .4,  hp: .95,  dmg: .85, rate: 1.1, speed: .95, ally: .65, you: 1.1 },
+  hard:   { name: 'Hard',   reward: 150, skill: .85, hp: 1.15, dmg: 1.1, rate: .9,  speed: 1.05, ally: .6, you: 1 },
+};
 const LEADERBOARD_URL = ''; // global leaderboard endpoint: GET -> [{name,wins}], POST {name,wins,kills}. Empty = not connected yet
 const SAVE_KEY = 'pixelmages.save.v1';
 const TAU = Math.PI * 2;
@@ -336,11 +404,19 @@ function hashStr(str) {
 
 // ===================== save data (stays on the phone) =====================
 function defaultSave() {
-  return { user: null, pass: null, remember: true, coins: 0, owned: ['apprentice'], main: 'apprentice', allies: [],
+  return { user: null, pass: null, remember: true, coins: 0, owned: ['apprentice'], main: 'apprentice', allies: [null, null], difficulty: 'medium',
     wins: 0, losses: 0, draws: 0, kills: 0, deaths: 0, matches: 0, sound: true, created: Date.now() };
 }
 function loadSave() {
-  try { const raw = localStorage.getItem(SAVE_KEY); if (raw) return Object.assign(defaultSave(), JSON.parse(raw)); } catch (e) {}
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (raw) {
+      const s = Object.assign(defaultSave(), JSON.parse(raw));
+      const a = Array.isArray(s.allies) ? s.allies : [];
+      s.allies = [a[0] || null, a[1] || null]; // one entry per teammate slot
+      return s;
+    }
+  } catch (e) {}
   return defaultSave();
 }
 let save = loadSave();
@@ -578,24 +654,28 @@ function renderMap(map, g, seed) {
 // ===================== match state =====================
 const canvas = $('game'), ctx = canvas.getContext('2d');
 let VW = 480, G = null;
-const enemySkill = () => clamp(.3 + save.wins * .04, .3, .9);
-const allySkill = () => clamp(.5 + save.wins * .02, .5, .8);
+const allyIds = () => [0, 1].map(i => { const id = save.allies[i]; return id && id !== save.main && save.owned.includes(id) && MAGE_BY_ID[id] ? id : 'apprentice'; });
+function tune(u, D) {
+  if (u.isPlayer) { u.maxHp = u.hp = Math.round(u.def.hp * D.you); return; }
+  if (u.team !== 1) return;
+  u.maxHp = u.hp = Math.round(u.def.hp * D.hp); u.dmgMul = D.dmg; u.rateMul = D.rate; u.speed = u.def.speed * D.speed;
+}
 
 function makeUnit(def, team, isPlayer, skill) {
   return { def, team, isPlayer, skill, minion: false, owner: null, x: 0, y: 0, sx: 0, sy: 0, r: 5, hp: def.hp, maxHp: def.hp, speed: def.speed,
     atkCd: .3 + rand() * .3, specCd: def.scd * .5, dashCd: 0, dashT: 0, dashVx: 0, dashVy: 0, face: team === 0 ? 1 : -1,
     lastMx: team === 0 ? 1 : -1, lastMy: 0, moving: false, anim: 0, vx: 0, vy: 0, slowT: 0, burnT: 0, burnBy: null, freezeT: 0,
     shieldT: 0, invisT: 0, invulnT: 0, flashT: 0, dead: false, respawnT: 0, kills: 0, deaths: 0, life: 0, lastBy: null, lastByT: -9,
-    aimErr: (1 - skill) * .5,
+    aimErr: (1 - skill) * .7, dmgMul: 1, rateMul: 1,
     ctrl: { mx: 0, my: 0, atk: false, spec: false, dash: false, ax: team === 0 ? 1 : -1, ay: 0, target: null },
     ai: { think: 0, target: null, strafeDir: rand() < .5 ? 1 : -1, strafeT: rand(), rangePref: .55 + rand() * .25, brave: rand(), hurtT: 0, stuckT: .5, lx: 0, ly: 0, forcePath: 0 } };
 }
 
-function newMatch(demo) {
+function newMatch(demo, diff = 'medium') {
   const map = MAPS[Math.floor(rand() * MAPS.length)];
   const seed = (rand() * 1e9) | 0;
   const grid = buildGrid(map, seed);
-  G = { demo, map, grid, units: [], projs: [], parts: [], fx: [], texts: [], score: [0, 0], time: MATCH_TIME,
+  G = { demo, diff, map, grid, units: [], projs: [], parts: [], fx: [], texts: [], score: [0, 0], time: MATCH_TIME,
     state: demo ? 'playing' : 'countdown', countdown: 3.4, fightT: 0, lastTick: 9, cam: { x: 0, y: 0 }, shake: 0, player: null,
     overT: 0, result: null, flowCache: new Map(), flowT: 0, clock: 0, hazards: [] };
   G.mapCanvas = renderMap(map, grid, seed);
@@ -603,15 +683,15 @@ function newMatch(demo) {
   const lineup = [[], []];
   if (demo) { for (let t = 0; t < 2; t++) for (let i = 0; i < 3; i++) lineup[t].push({ def: randMage(), skill: .6 }); }
   else {
+    const D = DIFFS[diff];
     lineup[0].push({ def: MAGE_BY_ID[save.main] || MAGES[0], player: true, skill: 1 });
-    const al = save.allies.filter(id => id !== save.main && save.owned.includes(id) && MAGE_BY_ID[id]).slice(0, 2);
-    while (al.length < 2) al.push('apprentice');
-    al.forEach(id => lineup[0].push({ def: MAGE_BY_ID[id], skill: allySkill() }));
-    for (let i = 0; i < 3; i++) lineup[1].push({ def: randMage(), skill: enemySkill() });
+    allyIds().forEach(id => lineup[0].push({ def: MAGE_BY_ID[id], skill: D.ally }));
+    for (let i = 0; i < 3; i++) lineup[1].push({ def: randMage(), skill: D.skill });
   }
   const ys = [12.5, 15, 17.5];
   lineup.forEach((arr, t) => arr.forEach((o, i) => {
     const u = makeUnit(o.def, t, !!o.player, o.skill);
+    if (!demo) tune(u, DIFFS[diff]);
     u.sx = (t === 0 ? 3.5 : MW - 3.5) * TILE; u.sy = ys[i] * TILE; u.x = u.sx; u.y = u.sy;
     if (o.player) G.player = u;
     G.units.push(u);
@@ -712,6 +792,7 @@ function applyEffect(u, eff, src) {
 }
 function hurt(u, amt, src, silent) {
   if (u.dead) return;
+  if (src && src.dmgMul) amt *= src.dmgMul;
   if (u.invulnT > 0 || u.shieldT > 0) { if (!silent) text(u.x, u.y - 22, 'BLOCK', '#ffe27a'); return; }
   u.hp -= amt;
   if (src) { u.lastBy = src; u.lastByT = G.clock; }
@@ -807,7 +888,7 @@ function castSpecial(u) {
     case 'summon': {
       if (G.units.filter(m => m.minion && m.owner === u && !m.dead).length >= 4) return false;
       for (let i = 0; i < 2; i++) {
-        const m = makeUnit(SKELETON, u.team, false, .5); m.minion = true; m.owner = u; m.life = 14; m.r = 4; m.atkCd = .5;
+        const m = makeUnit(SKELETON, u.team, false, .5); m.minion = true; m.owner = u; m.dmgMul = u.dmgMul; m.life = 14; m.r = 4; m.atkCd = .5;
         m.x = u.x + (i ? 12 : -12); m.y = u.y + 6; if (blocked(m.x, m.y, m.r, m)) { m.x = u.x; m.y = u.y; }
         burst(m.x, m.y, '#7dffa6', 10, 40, .5); G.units.push(m);
       }
@@ -906,7 +987,7 @@ function botAI(u, dt) {
     const p = incoming(u);
     if (p) { const s = rand() < .5 ? 1 : -1, v = Math.hypot(p.vx, p.vy) || 1; c.mx = -p.vy / v * s; c.my = p.vx / v * s; c.dash = true; }
   }
-  if (u.specCd <= 0 && rand() < dt * 3) {
+  if (u.specCd <= 0 && rand() < dt * (.8 + 3 * u.skill)) {
     const sp = u.def.special;
     if ((sp === 'burst' && d < 65) || (sp === 'nova' && d < 55) || (sp === 'quake' && d < 72)) c.spec = true;
     else if ((sp === 'fireball' || sp === 'meteor' || sp === 'chain') && see && d < u.def.range) c.spec = true;
@@ -951,7 +1032,7 @@ function act(u, dt, tile) {
   if (u.minion) return;
   if (c.atk && u.atkCd <= 0) {
     let a = aimAngle(u); if (!u.isPlayer) a += (rand() - .5) * u.aimErr;
-    shoot(u, a); u.atkCd = u.def.rate; sfx('shoot', u);
+    shoot(u, a); u.atkCd = u.def.rate * u.rateMul; sfx('shoot', u);
   }
   if (c.spec) {
     if (u.specCd <= 0) { if (castSpecial(u)) u.specCd = u.def.scd; else if (u.isPlayer) text(u.x, u.y - 24, 'NO TARGET', '#a99cc9'); }
@@ -1159,7 +1240,7 @@ function setText(el, v) { if (hudCache[el.id] !== v) { hudCache[el.id] = v; el.t
 function updateHud() {
   const p = G.player; if (!p) return;
   setText($('scoreB'), String(G.score[0])); setText($('scoreR'), String(G.score[1]));
-  const tt = Math.ceil(G.time); setText($('timer'), `${tt / 60 | 0}:${String(tt % 60).padStart(2, '0')} · FIRST TO ${KILLS_TO_WIN}`);
+  const tt = Math.ceil(G.time); setText($('timer'), `${DIFFS[G.diff].name.toUpperCase()} · ${tt / 60 | 0}:${String(tt % 60).padStart(2, '0')} · FIRST TO ${KILLS_TO_WIN}`);
   const f = p.hp / p.maxHp;
   hpFill.style.width = (100 * f) + '%'; hpFill.style.background = f < .3 ? 'var(--blood)' : 'var(--leaf)';
   setText(hpName, p.dead ? `RESPAWN IN ${Math.ceil(p.respawnT)}` : `${save.user} · ${p.def.name}`);
@@ -1287,6 +1368,8 @@ function go(id) {
   else if (id === 'scrInv') renderInv();
   else if (id === 'scrShop') renderShop();
   else if (id === 'scrBoard') renderBoard('rivals');
+  else if (id === 'scrAccount') renderAccount();
+  else if (id === 'scrMode') renderModes();
   show(id);
 }
 document.addEventListener('click', e => {
@@ -1321,21 +1404,88 @@ $('formLogin').addEventListener('submit', e => {
 });
 $('btnReset').onclick = () => askConfirm('Start over? This deletes your mage, coins and heroes on this phone.', () => { save = defaultSave(); persist(); $('inUser').value = ''; show('scrUser'); }, 'scrLogin');
 $('btnLogout').onclick = () => { save.remember = false; persist(); showLogin(); };
-$('btnSound').onclick = () => { save.sound = !save.sound; persist(); refreshHome(); };
+$('btnSound').onclick = () => { save.sound = !save.sound; persist(); renderAccount(); };
 
 // --- home ---
 function refreshHome() {
+  const def = MAGE_BY_ID[save.main] || MAGES[0];
   $('homeUser').textContent = save.user || 'MAGE';
   $('homeCoins').textContent = '$' + save.coins;
   $('homeWins').textContent = save.wins + (save.wins === 1 ? ' WIN' : ' WINS');
-  $('btnSound').textContent = 'Sound: ' + (save.sound ? 'on' : 'off');
+  $('heroName').textContent = `${def.name} · ${def.title}`;
+  spriteInto($('acctAvatar'), def);
+  renderSlots();
 }
 function buildTitle() {
   const c = $('titleCanvas'), x = c.getContext('2d');
   x.clearRect(0, 0, c.width, c.height);
-  drawText(x, 'PIXEL MAGES', 70, 3, 2, '#ffd23f', '#5d22b0', 'center');
-  ['pyro', 'frost', 'apprentice', 'storm', 'druid'].forEach((id, i) => x.drawImage(sprites(MAGE_BY_ID[id]).frames[i < 3 ? 0 : 1][0], 33 + i * 15, 22));
+  drawText(x, 'PIXEL MAGES', 67, 2, 2, '#ffd23f', '#5d22b0', 'center');
 }
+function spriteInto(cv, def) { const x = cv.getContext('2d'); x.clearRect(0, 0, cv.width, cv.height); x.drawImage(sprites(def).frames[0][0], 0, 0); }
+
+// --- hero stage: idle animation of your hero on a turning magic circle ---
+const stageEl = $('stageCanvas'), stageParts = [];
+function drawStage(t, dt) {
+  const x = stageEl.getContext('2d'), def = MAGE_BY_ID[save.main] || MAGES[0];
+  x.clearRect(0, 0, stageEl.width, stageEl.height);
+  x.fillStyle = 'rgba(10,7,20,.55)';
+  for (let dx = -24; dx <= 24; dx++) { const h = Math.round(6 * Math.sqrt(1 - (dx / 24.5) ** 2)); x.fillRect(32 + dx, 52 - h, 1, h * 2 + 1); }
+  x.fillStyle = def.proj;
+  for (let i = 0; i < 16; i++) {
+    const a = t * .7 + i * TAU / 16;
+    x.globalAlpha = .45 + .4 * Math.sin(t * 3 + i);
+    x.fillRect(Math.round(32 + Math.cos(a) * 21), Math.round(52 + Math.sin(a) * 5), 1, 1);
+  }
+  x.globalAlpha = 1;
+  const bob = Math.round(Math.sin(t * 2.2) * 1.5);
+  x.imageSmoothingEnabled = false;
+  x.drawImage(sprites(def).frames[0][0], 18, 17 + bob, 28, 36);
+  if (rand() < .35) stageParts.push({ x: 40 + (rand() - .5) * 4, y: 24 + bob, vx: (rand() - .5) * 8, vy: -6 - rand() * 10, life: 1 });
+  for (let i = stageParts.length - 1; i >= 0; i--) {
+    const p = stageParts[i]; p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    if (p.life <= 0) { stageParts.splice(i, 1); continue; }
+    x.globalAlpha = p.life; x.fillStyle = i % 3 ? def.gem : '#ffffff'; x.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+  }
+  x.globalAlpha = 1;
+}
+
+// --- teammate slots on each side of the hero ---
+let teamSlot = 0;
+function renderSlots() {
+  document.querySelectorAll('.slot').forEach(el => {
+    const id = save.allies[+el.dataset.slot];
+    el.replaceChildren();
+    if (id && id !== save.main && save.owned.includes(id) && MAGE_BY_ID[id]) {
+      el.classList.add('filled');
+      const cv = document.createElement('canvas'); cv.width = 14; cv.height = 18; spriteInto(cv, MAGE_BY_ID[id]);
+      const s = document.createElement('small'); s.textContent = MAGE_BY_ID[id].name + ' BOT';
+      el.append(cv, s);
+    } else {
+      el.classList.remove('filled');
+      const p = document.createElement('span'); p.className = 'plus'; p.textContent = '+';
+      const s = document.createElement('small'); s.textContent = 'ADD';
+      el.append(p, s);
+    }
+  });
+}
+document.querySelectorAll('.slot').forEach(el => { el.onclick = () => { teamSlot = +el.dataset.slot; renderTeam(); show('scrTeam'); sfx('click'); }; });
+function renderTeam() {
+  $('teamTitle').textContent = `Teammate ${teamSlot + 1}`;
+  const cards = MAGES.filter(m => save.owned.includes(m.id) && m.id !== save.main).map(m => heroCard(m, 'team'));
+  $('teamCards').replaceChildren(...cards);
+  $('teamEmpty').hidden = cards.length > 0;
+}
+$('btnClearSlot').onclick = () => { save.allies[teamSlot] = null; persist(); go('scrHome'); };
+
+// --- account & difficulty ---
+function renderAccount() {
+  $('accName').textContent = save.user;
+  const rows = [['Coins', '$' + save.coins], ['Wins', save.wins], ['Losses', save.losses], ['Draws', save.draws], ['Kills', save.kills], ['Matches played', save.matches], ['Heroes owned', `${save.owned.length} / ${MAGES.length}`]];
+  const tbl = $('accStats'); tbl.replaceChildren();
+  rows.forEach(([k, v]) => { const tr = tbl.insertRow(); tr.insertCell().textContent = k; const c = tr.insertCell(); c.className = 'num'; c.textContent = v; });
+  $('btnSound').textContent = 'Sound: ' + (save.sound ? 'on' : 'off');
+}
+function renderModes() { document.querySelectorAll('[data-diff]').forEach(b => b.classList.toggle('last', b.dataset.diff === save.difficulty)); }
 
 // --- hero cards ---
 function heroCard(def, mode) {
@@ -1366,18 +1516,27 @@ function heroCard(def, mode) {
   } else if (mode === 'inv') {
     const b1 = document.createElement('button'); b1.className = 'btn small gold';
     if (save.main === def.id) { b1.textContent = 'You play this'; b1.disabled = true; }
-    else { b1.textContent = 'Play as'; b1.onclick = () => { save.main = def.id; save.allies = save.allies.filter(a => a !== def.id); persist(); renderInv(); }; }
+    else { b1.textContent = 'Play as'; b1.onclick = () => { save.main = def.id; save.allies = save.allies.map(a => a === def.id ? null : a); persist(); renderInv(); }; }
     el.append(b1);
     if (save.main !== def.id) {
       const isAlly = save.allies.includes(def.id);
       const b2 = document.createElement('button'); b2.className = 'btn small mana'; b2.textContent = isAlly ? 'Remove bot ally' : 'Add bot ally';
       b2.onclick = () => {
-        if (isAlly) save.allies = save.allies.filter(a => a !== def.id);
-        else { save.allies.push(def.id); if (save.allies.length > 2) save.allies.shift(); }
+        if (isAlly) save.allies = save.allies.map(a => a === def.id ? null : a);
+        else { const free = save.allies.indexOf(null); save.allies[free < 0 ? 1 : free] = def.id; }
         persist(); renderInv();
       };
       el.append(b2);
     }
+  } else if (mode === 'team') {
+    const inSlot = save.allies[teamSlot] === def.id;
+    const b = document.createElement('button'); b.className = 'btn small ' + (inSlot ? '' : 'gold');
+    b.textContent = inSlot ? 'In this slot' : 'Pick'; b.disabled = inSlot;
+    b.onclick = () => {
+      save.allies = save.allies.map(a => a === def.id ? null : a); save.allies[teamSlot] = def.id; persist();
+      toast(`${def.name} joins your team!`); go('scrHome');
+    };
+    el.append(b);
   }
   return el;
 }
@@ -1398,9 +1557,8 @@ function buy(def) {
 function renderInv() {
   const line = $('teamLine'); line.replaceChildren();
   const chip = (txt, cls) => { const s = document.createElement('span'); s.className = 'stat-chip' + (cls ? ' ' + cls : ''); s.textContent = txt; return s; };
-  const allies = save.allies.filter(id => id !== save.main && MAGE_BY_ID[id]);
   line.append(chip('YOU: ' + MAGE_BY_ID[save.main].name, 'coins'));
-  for (let i = 0; i < 2; i++) line.append(chip('BOT: ' + (allies[i] ? MAGE_BY_ID[allies[i]].name : 'Arlo')));
+  allyIds().forEach(id => line.append(chip('BOT: ' + MAGE_BY_ID[id].name)));
   const n = document.createElement('p'); n.className = 'note'; n.style.width = '100%';
   n.textContent = 'Your team is you plus 2 bot allies. Empty bot slots use Arlo. Buy more heroes in the shop.';
   line.append(n);
@@ -1456,11 +1614,13 @@ function goFullscreen() {
     if (!document.fullscreenElement && d.requestFullscreen) d.requestFullscreen({ navigationUI: 'hide' }).then(() => { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); }).catch(() => {});
   } catch (e) {}
 }
-function startGame() {
+function startGame(diff) {
+  if (!DIFFS[diff]) diff = 'medium';
+  save.difficulty = diff; persist();
   audioUnlock(); goFullscreen();
   if (document.activeElement) document.activeElement.blur();
   Object.assign(input, { jx: 0, jy: 0, atk: false, spec: false, dash: false });
-  newMatch(false);
+  newMatch(false, diff);
   show(null); hud.hidden = false; controls.hidden = false; feedEl.replaceChildren(); homeBase();
   for (const k in hudCache) delete hudCache[k];
 }
@@ -1470,7 +1630,7 @@ function toMenu(id) {
 function pause() {
   if (!inMatch()) return;
   G.prevState = G.state; G.state = 'paused'; input.atk = false;
-  $('pauseInfo').textContent = `Arena: ${G.map.name}. Score ${G.score[0]} : ${G.score[1]}.`;
+  $('pauseInfo').textContent = `${DIFFS[G.diff].name} match on ${G.map.name}. Score ${G.score[0]} : ${G.score[1]}.`;
   show('scrPause');
 }
 function resume() { if (G && G.state === 'paused') { G.state = G.prevState; show(null); } }
@@ -1479,16 +1639,18 @@ function finishMatch() {
   G.state = 'done';
   const p = G.player, res = G.result;
   save.matches++; save.kills += p.kills; save.deaths += p.deaths;
-  if (res === 'win') { save.wins++; save.coins += REWARD; } else if (res === 'loss') save.losses++; else save.draws++;
+  const reward = DIFFS[G.diff].reward;
+  if (res === 'win') { save.wins++; save.coins += reward; } else if (res === 'loss') save.losses++; else save.draws++;
   persist(); submitScore();
   hud.hidden = true; controls.hidden = true;
   const t = $('resTitle'); t.className = res; t.textContent = res === 'win' ? 'VICTORY' : res === 'loss' ? 'DEFEAT' : 'DRAW';
-  $('resReward').textContent = res === 'win' ? `+$${REWARD}  ·  You have $${save.coins}` : 'No coins this time. Win to earn $' + REWARD + '.';
+  $('resReward').textContent = res === 'win' ? `+$${reward}  ·  You have $${save.coins}` : `No coins this time. Win on ${DIFFS[G.diff].name} to earn $${reward}.`;
   $('resStats').textContent = `Score ${G.score[0]} : ${G.score[1]} on ${G.map.name}. Your kills: ${p.kills}. Deaths: ${p.deaths}.`;
   show('scrResult');
 }
-$('btnPlay').onclick = startGame;
-$('btnAgain').onclick = startGame;
+$('btnPlay').onclick = () => go('scrMode');
+$('btnAgain').onclick = () => startGame(G.diff);
+document.querySelectorAll('[data-diff]').forEach(b => { b.onclick = () => startGame(b.dataset.diff); });
 $('btnHomeRes').onclick = () => toMenu('scrHome');
 $('pauseBtn').onclick = pause;
 $('btnResume').onclick = resume;
@@ -1504,11 +1666,13 @@ function resize() {
 }
 addEventListener('resize', resize);
 let last = performance.now();
+const homeEl = $('scrHome');
 function loop(now) {
   const dt = Math.min(.05, Math.max(0, (now - last) / 1000)); last = now;
   sfxBudget = 0;
   update(dt); render();
   if (G && !G.demo && !hud.hidden) updateHud();
+  if (!homeEl.hidden) drawStage(now / 1000, dt);
   requestAnimationFrame(loop);
 }
 function boot() {
